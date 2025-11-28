@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>智慧美食地圖 🍢</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      margin: 0;
+      background-color: #fffaf5;
+    }
+    header {
+      background-color: #ff7043;
+      color: white;
+      text-align: center;
+      padding: 15px;
+      font-size: 22px;
+      font-weight: bold;
+    }
+    .buttons {
+      text-align: center;
+      margin: 15px;
+    }
+    button {
+      background-color: #ff7043;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 25px;
+      margin: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #ff5722;
+    }
+    input[type="text"] {
+      width: 70%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    #map {
+      height: 70vh;
+      width: 100%;
+      border-radius: 10px;
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+    }
+    .menu-popup, .order-popup {
+      display: none;
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      border-radius: 15px;
+      box-shadow: 0px 4px 15px rgba(0,0,0,0.2);
+      z-index: 1000;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    .menu-popup {
+      width: 90%; max-width: 420px; padding: 20px;
+    }
+    .order-popup {
+      width: 80%; max-width: 300px; padding: 20px; text-align: center;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translate(-50%, -40%);}
+      to {opacity: 1; transform: translate(-50%, -50%);}
+    }
+    .menu-popup h3 { text-align: center; color: #ff7043; }
+    .menu-item { display: flex; align-items: center; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; }
+    .menu-item img { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; margin-right: 10px; }
+    .menu-info { flex: 1; }
+    .order-btn { background-color: #ff7043; color: white; border: none; border-radius: 8px; padding: 5px 10px; cursor: pointer; }
+    .order-btn:hover { background-color: #ff5722; }
+    .close-btn { display: block; text-align: center; background-color: #ff7043; color: white; border-radius: 8px; padding: 8px; margin-top: 10px; cursor: pointer; }
+    .rating { text-align: center; margin: 10px 0; }
+    .star { font-size: 25px; color: #ccc; cursor: pointer; transition: color 0.2s; }
+    .star.selected { color: #ffb400; }
+    .comment-section textarea { width: 100%; border-radius: 8px; border: 1px solid #ccc; padding: 8px; font-size: 14px; resize: none; }
+    .comment-list { margin-top: 10px; max-height: 150px; overflow-y: auto; border-top: 1px solid #eee; padding-top: 5px; }
+    .comment-item { background-color: #fff8f3; padding: 5px; border-radius: 8px; margin-bottom: 5px; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<header>🍢 智慧美食地圖</header>
+
+<div class="buttons">
+  <button onclick="login()">登入</button>
+  <button onclick="getLocation()">開啟定位</button><br>
+  <input type="text" id="searchInput" placeholder="輸入想吃的食物名稱..." />
+  <button onclick="searchFood()">搜尋</button>
+</div>
+
+<div id="map"></div>
+
+<!-- 菜單視窗 -->
+<div id="menuPopup" class="menu-popup">
+  <h3 id="storeName">店家名稱</h3>
+  <p><strong>營業時間：</strong><span id="storeTime"></span></p>
+  <ul id="menuList"></ul>
+
+  <div class="rating">
+    <span class="star" onclick="rateStar(1)">★</span>
+    <span class="star" onclick="rateStar(2)">★</span>
+    <span class="star" onclick="rateStar(3)">★</span>
+    <span class="star" onclick="rateStar(4)">★</span>
+    <span class="star" onclick="rateStar(5)">★</span>
+    <p id="ratingText">尚未評分</p>
+  </div>
+
+  <div class="comment-section">
+    <textarea id="commentInput" rows="3" placeholder="留下您的評論..."></textarea>
+    <button onclick="addComment()">送出留言</button>
+    <div class="comment-list" id="commentList"></div>
+  </div>
+
+  <div class="close-btn" onclick="closeMenu()">關閉</div>
+</div>
+
+<!-- 預購視窗 -->
+<div id="orderPopup" class="order-popup">
+  <h3 id="orderItemName"></h3>
+  <p>請輸入預購份數：</p>
+  <input type="number" id="orderQuantity" min="1" value="1" />
+  <div>
+    <button class="order-btn" onclick="confirmOrder()">確認預購</button>
+    <button class="close-btn" onclick="closeOrder()">取消</button>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+
+let map, userMarker, userCircle, currentStall = null;
+let currentOrderItem = null;
+let currentRating = 0;
+const commentsData = {};
+const ratingData = {};
+
+// ⭐⭐⭐ 新增：判斷是否營業中 ⭐⭐⭐
+function isOpen(timeStr) {
+  const [open, close] = timeStr.split(" - ");
+  const now = new Date();
+  const current = now.getHours() * 60 + now.getMinutes();
+
+  const [openH, openM] = open.split(":").map(Number);
+  const [closeH, closeM] = close.split(":").map(Number);
+
+  const openMin = openH * 60 + openM;
+  const closeMin = closeH * 60 + closeM;
+
+  // 跨午夜
+  if (closeMin < openMin) {
+    return current >= openMin || current <= closeMin;
+  }
+  return current >= openMin && current <= closeMin;
+}
+
+function login() {
+  alert("登入成功！（示範）");
+}
+
+function getLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(showPosition, showError);
+  } else alert("您的瀏覽器不支援定位功能");
+}
+
+function showPosition(position) {
+  const lat = position.coords.latitude;
+  const lng = position.coords.longitude;
+
+  if (!map) {
+    map = L.map('map').setView([lat, lng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap 貢獻者'
+    }).addTo(map);
+  }
+
+  if (userMarker) map.removeLayer(userMarker);
+  if (userCircle) map.removeLayer(userCircle);
+  userMarker = L.marker([lat, lng]).addTo(map).bindPopup("📍 您的位置");
+  userCircle = L.circle([lat, lng], {
+    color: 'orange', fillColor: '#ffa726', fillOpacity: 0.2, radius: 5000
+  }).addTo(map);
+
+  // 攤販資料
+  window.stalls = [
+    { name: "阿明鹽酥雞", lat: lat + 0.003, lng: lng + 0.002, time: "17:00 - 00:00",
+      menu: [
+        { item: "鹽酥雞", price: 60, remain: 12, img: "https://i.imgur.com/4eY5JzC.jpg" },
+        { item: "甜不辣", price: 40, remain: 5, img: "https://i.imgur.com/LO6u5uf.jpg" },
+        { item: "地瓜薯條", price: 35, remain: 8, img: "https://i.imgur.com/qyH7V5f.jpg" }
+      ]},
+    { name: "珍珠奶茶攤", lat: lat - 0.004, lng: lng + 0.001, time: "10:00 - 22:00",
+      menu: [
+        { item: "珍珠奶茶", price: 50, remain: 20, img: "https://i.imgur.com/hD8ZrOQ.jpg" },
+        { item: "冬瓜檸檬", price: 45, remain: 9, img: "https://i.imgur.com/kGjD5y3.jpg" },
+        { item: "紅茶拿鐵", price: 55, remain: 15, img: "https://i.imgur.com/qK9mAsv.jpg" }
+      ]},
+    { name: "阿婆滷味", lat: lat + 0.002, lng: lng - 0.003, time: "16:00 - 23:00",
+      menu: [
+        { item: "滷豆干", price: 25, remain: 10, img: "https://i.imgur.com/Z1lYoJq.jpg" },
+        { item: "滷蛋", price: 15, remain: 18, img: "https://i.imgur.com/AnRNYgo.jpg" },
+        { item: "滷海帶", price: 20, remain: 14, img: "https://i.imgur.com/L1Nlmwb.jpg" }
+      ]},
+    { name: "幸福章魚燒", lat: lat + 0.001, lng: lng + 0.004, time: "15:30 - 22:30",
+      menu: [
+        { item: "章魚燒(6顆)", price: 60, remain: 10, img: "https://i.imgur.com/1F8LkOa.jpg" },
+        { item: "明太子章魚燒", price: 75, remain: 6, img: "https://i.imgur.com/VJFGmyR.jpg" }
+      ]},
+    { name: "正宗牛肉麵", lat: lat - 0.002, lng: lng - 0.004, time: "11:00 - 20:30",
+      menu: [
+        { item: "紅燒牛肉麵", price: 120, remain: 15, img: "https://i.imgur.com/r1NwDuf.jpg" },
+        { item: "清燉牛肉麵", price: 120, remain: 10, img: "https://i.imgur.com/jc0vhfD.jpg" }
+      ]}
+  ];
+
+  renderStalls();
+}
+
+// ⭐⭐⭐ 修改：地圖顯示營業狀態 ⭐⭐⭐
+function renderStalls(filteredList = null) {
+  if (!map) return;
+  if (window.stallMarkers) window.stallMarkers.forEach(m => map.removeLayer(m));
+
+  const list = filteredList || [...window.stalls];
+  list.sort((a, b) => (ratingData[b.name] || 0) - (ratingData[a.name] || 0));
+
+  const top3 = list.filter(s => ratingData[s.name]).slice(0, 3);
+  const medals = ["🥇", "🥈", "🥉"];
+
+  window.stallMarkers = [];
+  list.forEach((s, i) => {
+    let rank = "";
+    const topIndex = top3.indexOf(s);
+    if (topIndex >= 0) rank = medals[topIndex] + " ";
+
+    const status = isOpen(s.time) ? "🟢 營業中" : "🔴 已休息";
+
+    const marker = L.marker([s.lat, s.lng]).addTo(map);
+    marker.bindPopup(`
+      <b>${rank}${s.name}</b><br>
+      ${status}<br>
+      平均評分：${ratingData[s.name] || "尚無"}<br>
+      <button onclick="openMenu('${s.name}')">查看菜單</button>
+    `);
+    marker.on("click", () => currentStall = s);
+    window.stallMarkers.push(marker);
+  });
+}
+
+function searchFood() {
+  const keyword = document.getElementById("searchInput").value.trim();
+  if (!keyword) { renderStalls(); return; }
+  const results = window.stalls.filter(s => s.menu.some(m => m.item.includes(keyword)));
+  if (results.length === 0) alert("找不到有賣這項食物的攤位！");
+  renderStalls(results);
+}
+
+// ⭐⭐⭐ 修改：菜單視窗顯示營業狀態 ⭐⭐⭐
+function openMenu(name) {
+  const stall = window.stalls.find(s => s.name === name);
+  if (!stall) return;
+  currentStall = stall;
+
+  document.getElementById("storeName").innerText = stall.name;
+
+  const statusText = isOpen(stall.time) ? "🟢 營業中" : "🔴 已休息";
+  document.getElementById("storeTime").innerHTML = `${stall.time}　${statusText}`;
+
+  const list = document.getElementById("menuList");
+  list.innerHTML = "";
+  stall.menu.forEach(m => {
+    const li = document.createElement("li");
+    li.classList.add("menu-item");
+    li.innerHTML = `
+      <img src="${m.img}" alt="${m.item}">
+      <div class="menu-info">
+        <strong>${m.item}</strong><br>💰 $${m.price} 📦 剩餘 ${m.remain} 份
+      </div>
+      <button class="order-btn" onclick="openOrder('${m.item}')">➕ 預購</button>
+    `;
+    list.appendChild(li);
+  });
+
+  loadComments();
+  resetRating();
+  document.getElementById("menuPopup").style.display = "block";
+}
+
+function openOrder(itemName) {
+  currentOrderItem = itemName;
+  document.getElementById("orderItemName").innerText = `預購：${itemName}`;
+  document.getElementById("orderPopup").style.display = "block";
+}
+function confirmOrder() {
+  const qty = parseInt(document.getElementById("orderQuantity").value);
+  if (qty > 0) {
+    alert(`✅ 您已成功預購 ${currentOrderItem} ${qty} 份！`);
+    closeOrder();
+  } else alert("請輸入正確的份數！");
+}
+function closeOrder() { document.getElementById("orderPopup").style.display = "none"; }
+function closeMenu() { document.getElementById("menuPopup").style.display = "none"; }
+
+function rateStar(value) {
+  currentRating = value;
+  document.querySelectorAll(".star").forEach((s, i) => s.classList.toggle("selected", i < value));
+  document.getElementById("ratingText").innerText = `您給予了 ${value} 星評價`;
+  const name = currentStall.name;
+  if (!ratingData[name]) ratingData[name] = value;
+  else ratingData[name] = Math.round((ratingData[name] + value) / 2 * 10) / 10;
+  renderStalls();
+}
+function resetRating() {
+  currentRating = 0;
+  document.querySelectorAll(".star").forEach(s => s.classList.remove("selected"));
+  document.getElementById("ratingText").innerText = "尚未評分";
+}
+
+function addComment() {
+  const text = document.getElementById("commentInput").value.trim();
+  if (!text) return alert("請輸入留言！");
+  const store = currentStall.name;
+  if (!commentsData[store]) commentsData[store] = [];
+  commentsData[store].push(text);
+  document.getElementById("commentInput").value = "";
+  loadComments();
+}
+function loadComments() {
+  const store = currentStall.name;
+  const list = document.getElementById("commentList");
+  list.innerHTML = "";
+  if (commentsData[store]) {
+    commentsData[store].forEach(c => {
+      const div = document.createElement("div");
+      div.classList.add("comment-item");
+      div.innerText = c;
+      list.appendChild(div);
+    });
+  }
+}
+function showError(error) {
+  alert("定位失敗：" + error.message);
+}
+
+</script>
+</body>
+</html>
