@@ -1,0 +1,91 @@
+// ---------------------------
+// Supabase 前端 API 設定
+// ---------------------------
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const SUPABASE_URL = "https://mgyanltztskzijodwshw.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR_ANON_KEY";
+
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// 資料表名稱
+const TABLE = "資料表1";
+
+
+// ---------------------------
+// 1. GET 全部攤位資料
+// ---------------------------
+export async function getStalls() {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select("*")
+    .order("id");
+
+  if (error) {
+    console.error("取得資料失敗：", error);
+    return [];
+  }
+
+  return data;
+}
+
+
+// ---------------------------
+// 2. POST 新增攤位
+// ---------------------------
+export async function addStall(item) {
+  const { error } = await supabase
+    .from(TABLE)
+    .insert([
+      {
+        創建: item.創建,
+        攤位名稱: item.攤位名稱,
+        課程: item.課程,
+        編號: item.編號,
+        人限: item.人限
+      }
+    ]);
+
+  if (error) {
+    console.error("新增失敗：", error);
+    return false;
+  }
+
+  return true;
+}
+
+
+// ---------------------------
+// 3. PUT 更新資料
+// ---------------------------
+export async function updateStall(id, data) {
+  const { error } = await supabase
+    .from(TABLE)
+    .update(data)
+    .eq("id", id);
+
+  if (error) {
+    console.error("更新失敗：", error);
+    return false;
+  }
+
+  return true;
+}
+
+
+// ---------------------------
+// 4. DELETE 刪除資料
+// ---------------------------
+export async function deleteStall(id) {
+  const { error } = await supabase
+    .from(TABLE)
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.error("刪除失敗：", error);
+    return false;
+  }
+
+  return true;
+}
