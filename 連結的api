@@ -1,0 +1,49 @@
+// Example: Supabase API integration for a frontend (JavaScript)
+// Replace the placeholder URL and anon key with your actual Supabase project values.
+
+import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_URL = "https://your-project.supabase.co"; // <-- replace
+const SUPABASE_ANON_KEY = "your-anon-key"; // <-- replace
+
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Example function: fetch all items from a table
+export async function getItems() {
+  const { data, error } = await supabase
+    .from('items')
+    .select('*');
+
+  if (error) throw error;
+  return data;
+}
+
+// Example function: insert a new item
+export async function addItem(newItem) {
+  const { data, error } = await supabase
+    .from('items')
+    .insert([newItem]);
+
+  if (error) throw error;
+  return data;
+}
+
+// Example user login with Google
+export async function signInWithGoogle() {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google'
+  });
+
+  if (error) throw error;
+  return data;
+}
+
+// Example real-time listener
+export function subscribeToItems(callback) {
+  return supabase
+    .channel('public:items')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'items' }, payload => {
+      callback(payload);
+    })
+    .subscribe();
+}
