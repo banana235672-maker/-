@@ -170,7 +170,6 @@ function getLocation() {
     navigator.geolocation.getCurrentPosition(showPosition, showError);
   } else alert("您的瀏覽器不支援定位功能");
 }
-
 function showPosition(position) {
   const lat = position.coords.latitude;
   const lng = position.coords.longitude;
@@ -184,7 +183,16 @@ function showPosition(position) {
 
   if (userMarker) map.removeLayer(userMarker);
   if (userCircle) map.removeLayer(userCircle);
-  userMarker = L.marker([lat, lng]).addTo(map).bindPopup("📍 您的位置");
+
+  // 設定紅色圖標
+  const userIcon = L.divIcon({
+    className: 'user-icon',
+    html: `<div style="width: 20px; height: 20px; background-color: red; border-radius: 50%; border: 2px solid white;"></div>`,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+  });
+
+  userMarker = L.marker([lat, lng], { icon: userIcon }).addTo(map).bindPopup("📍 您的位置");
   userCircle = L.circle([lat, lng], {
     color: 'orange', fillColor: '#ffa726', fillOpacity: 0.2, radius: 5000
   }).addTo(map);
@@ -223,6 +231,7 @@ function showPosition(position) {
 
   renderStalls();
 }
+
 
 // ⭐⭐⭐ 修改：地圖顯示營業狀態 ⭐⭐⭐
 function renderStalls(filteredList = null) {
