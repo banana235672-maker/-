@@ -3,545 +3,192 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🏪 店家後台管理</title>
+  <title>🏪 店家後台管理與訂單系統</title>
   <style>
-    body {
-      font-family: "Microsoft JhengHei", sans-serif;
-      margin: 0;
-      background-color: #f7f7f7;
-    }
-    header {
-      background-color: #43a047;
-      color: white;
-      text-align: center;
-      padding: 15px;
-      font-size: 22px;
-      font-weight: bold;
-    }
-    .container {
-      max-width: 700px;
-      margin: 20px auto;
-      background: white;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    }
-    h2 {
-      color: #333;
-      border-bottom: 2px solid #43a047;
-      padding-bottom: 5px;
-    }
-    button {
-      cursor: pointer;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 14px;
-      font-size: 15px;
-      font-weight: bold;
-      transition: 0.2s;
-    }
-    .open-btn {
-      background-color: #4caf50;
-      color: white;
-    }
-    .open-btn:hover {
-      background-color: #2e7d32;
-    }
-    .close-btn {
-      background-color: #e53935;
-      color: white;
-    }
-    .close-btn:hover {
-      background-color: #c62828;
-    }
-    .status {
-      text-align: center;
-      font-size: 18px;
-      margin-top: 10px;
-      font-weight: bold;
-    }
-    .status.open {
-      color: #43a047;
-    }
-    .status.closed {
-      color: #e53935;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    th, td {
-      padding: 10px;
-      text-align: center;
-      border-bottom: 1px solid #ccc;
-    }
-    th {
-      background-color: #e8f5e9;
-    }
-    input[type="text"], input[type="number"], input[type="time"] {
-      padding: 6px;
-      width: 90%;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    .action-btn {
-      background-color: #ff9800;
-      color: white;
-    }
-    .action-btn:hover {
-      background-color: #fb8c00;
-    }
-    .delete-btn {
-      background-color: #f44336;
-      color: white;
-    }
-    .delete-btn:hover {
-      background-color: #e53935;
-    }
-    .confirm-btn {
-      background-color: #4caf50;
-      color: white;
-    }
-    .confirm-btn:hover {
-      background-color: #388e3c;
-    }
-    .cancel-btn {
-      background-color: #f44336;
-      color: white;
-    }
-    .cancel-btn:hover {
-      background-color: #d32f2f;
-    }
-    .row {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      margin-top: 8px;
-    }
-    .small {
-      padding: 6px 8px;
-      font-size: 13px;
-    }
-    footer {
-      text-align: center;
-      margin-top: 20px;
-      color: #777;
-    }
+    body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; background:#f7f7f7; }
+    header { background:#43a047; color:#fff; text-align:center; padding:15px; font-size:22px; font-weight:bold; }
+    .container { max-width:900px; margin:20px auto; background:#fff; border-radius:10px; padding:20px; box-shadow:0 0 8px rgba(0,0,0,.1); }
+    button { cursor:pointer; border:none; border-radius:6px; padding:6px 12px; font-weight:bold; }
+    .open-btn{background:#4caf50;color:#fff;}
+    .close-btn{background:#e53935;color:#fff;}
+    .danger{background:#e53935;color:#fff;}
+    .primary{background:#43a047;color:#fff;}
+    .status{font-size:18px;font-weight:bold;margin-top:10px;text-align:center;}
+    .status.open{color:#43a047;}
+    .status.closed{color:#e53935;}
+    input{padding:6px;border-radius:5px;border:1px solid #ccc;margin:3px 0;}
+    table{width:100%;border-collapse:collapse;margin-top:10px;}
+    th,td{padding:8px;border-bottom:1px solid #ccc;text-align:center;}
+    th{background:#e8f5e9;}
+    .tab-buttons{display:flex;justify-content:center;margin-bottom:15px;}
+    .tab-buttons button.active{background:#43a047;color:#fff;}
+    .page{display:none;}
+    .page.active{display:block;}
+    .order-actions{margin-top:10px;text-align:right;}
   </style>
 </head>
 <body>
-  <header>🏪 店家後台管理系統</header>
-  <div class="container">
-    <!-- 老闆姓名 -->
-    <h2>👤 老闆姓名設定</h2>
-    <div class="row">
-      <input type="text" id="ownerName" placeholder="輸入老闆姓名" required>
-      <button class="confirm-btn small" id="saveOwnerBtn">儲存</button>
-    </div>
 
-    <!-- 店家招牌 -->
-    <h2>🪧 店家招牌設定</h2>
-    <div class="row">
-      <input type="text" id="shopSign" placeholder="輸入店家招牌名稱" required>
-      <button class="confirm-btn small" id="saveSignBtn">儲存</button>
-    </div>
+<header>🏪 店家後台管理與訂單系統</header>
 
-    <!-- 營業狀態 -->
-    <h2>🕒 營業狀態</h2>
-    <div style="text-align:center;">
-      <button class="open-btn" id="openBtn">🟢 開始營業</button>
-      <button class="close-btn" id="closeBtn">🔴 結束營業</button>
-    </div>
+<div class="container">
+  <div class="tab-buttons">
+    <button id="tab1" class="active">店家資訊</button>
+    <button id="tab2">菜單管理</button>
+    <button id="tab3">訂單管理</button>
+  </div>
+
+  <!-- 店家資訊 -->
+  <div id="page1" class="page active">
+    <input id="ownerName" placeholder="老闆姓名">
+    <input id="shopName" placeholder="店名">
+    <button id="saveShopBtn">儲存</button>
+    <p id="shopDisplay">尚未設定</p>
+    <button id="openBtn" class="open-btn">開始營業</button>
+    <button id="closeBtn" class="close-btn">結束營業</button>
     <div id="statusText" class="status closed">目前狀態：休業中</div>
+  </div>
 
-    <!-- 設定營業與休業時間 -->
-    <h2>⏰ 設定營業與休業時間（老闆設定）</h2>
-    <form id="hoursForm">
-      <table>
-        <tr>
-          <th>星期</th>
-          <th>營業開始時間</th>
-          <th>營業結束時間</th>
-        </tr>
-        <tr>
-          <td>星期一</td>
-          <td><input type="time" name="mondayOpen" required></td>
-          <td><input type="time" name="mondayClose" required></td>
-        </tr>
-        <tr>
-          <td>星期二</td>
-          <td><input type="time" name="tuesdayOpen" required></td>
-          <td><input type="time" name="tuesdayClose" required></td>
-        </tr>
-        <tr>
-          <td>星期三</td>
-          <td><input type="time" name="wednesdayOpen" required></td>
-          <td><input type="time" name="wednesdayClose" required></td>
-        </tr>
-        <tr>
-          <td>星期四</td>
-          <td><input type="time" name="thursdayOpen" required></td>
-          <td><input type="time" name="thursdayClose" required></td>
-        </tr>
-        <tr>
-          <td>星期五</td>
-          <td><input type="time" name="fridayOpen" required></td>
-          <td><input type="time" name="fridayClose" required></td>
-        </tr>
-        <tr>
-          <td>星期六</td>
-          <td><input type="time" name="saturdayOpen" required></td>
-          <td><input type="time" name="saturdayClose" required></td>
-        </tr>
-        <tr>
-          <td>星期日</td>
-          <td><input type="time" name="sundayOpen" required></td>
-          <td><input type="time" name="sundayClose" required></td>
-        </tr>
-      </table>
-      <div style="text-align:right; margin-top:8px;">
-        <button type="submit" class="confirm-btn">儲存時間設定</button>
-      </div>
-    </form>
+  <!-- 菜單管理 -->
+  <div id="page2" class="page">
+    <input id="itemName" placeholder="品項">
+    <input id="itemPrice" type="number" placeholder="價格">
+    <input id="itemStock" type="number" placeholder="庫存">
+    <button id="addItemBtn">新增菜單</button>
 
-    <!-- 菜單管理 -->
-    <h2>📋 菜單管理</h2>
-    <div class="row">
-      <input type="text" id="itemName" placeholder="輸入品項名稱">
-      <input type="number" id="itemStock" placeholder="輸入庫存數量" min="0">
-      <button class="action-btn" id="addItemBtn">➕ 新增品項</button>
-    </div>
-    <table id="menuTable">
+    <table>
       <thead>
-        <tr>
-          <th>品項</th>
-          <th>庫存</th>
-          <th>操作</th>
-        </tr>
+        <tr><th>品項</th><th>價格</th><th>庫存</th><th>操作</th></tr>
       </thead>
-      <tbody></tbody>
-    </table>
-
-    <!-- 預購訂單管理 -->
-    <h2>📦 預購訂單管理</h2>
-    <div class="row">
-      <input type="text" id="preItemName" placeholder="輸入預購品項">
-      <input type="number" id="preQuantity" placeholder="數量" min="1">
-      <button class="action-btn" id="addPreBtn">➕ 新增預購訂單</button>
-    </div>
-    <table id="preorderTable">
-      <thead>
-        <tr>
-          <th>品項</th>
-          <th>數量</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <!-- 已接受訂單 -->
-    <h2>✅ 已接受訂單</h2>
-    <table id="acceptedTable">
-      <thead>
-        <tr>
-          <th>品項</th>
-          <th>數量</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
+      <tbody id="menuTable"></tbody>
     </table>
   </div>
-  <footer>
-    <p>🏪 店家管理系統 - 版權所有</p>
-  </footer>
 
-  <script>
-    // ----- 簡單資料模型存在 localStorage -----
-    const STORAGE_KEYS = {
-      OWNER: 'store_owner',
-      SIGN: 'store_sign',
-      STATUS: 'store_status', // 'open' or 'closed'
-      HOURS: 'store_hours',
-      MENU: 'store_menu', // array of {id, name, stock}
-      PREORDERS: 'store_preorders', // array of {id, name, quantity}
-      ACCEPTED: 'store_accepted' // array of {id, name, quantity}
-    };
+  <!-- 訂單管理 -->
+  <div id="page3" class="page">
+    <table>
+      <thead>
+        <tr><th>品項</th><th>數量</th><th>總價</th><th>操作</th></tr>
+      </thead>
+      <tbody id="orderTable"></tbody>
+    </table>
 
-    // helper: 產生 ID
-    function genId(prefix='id') {
-      return prefix + '_' + Date.now() + '_' + Math.floor(Math.random()*1000);
-    }
+    <div class="order-actions">
+      <button class="primary" onclick="submitOrders()">送出訂單</button>
+    </div>
+  </div>
+</div>
 
-    // 取 localStorage（若沒有則回傳預設）
-    function load(key, def) {
-      try {
-        const raw = localStorage.getItem(key);
-        return raw ? JSON.parse(raw) : def;
-      } catch (e) {
-        console.error('load error', e);
-        return def;
-      }
-    }
-    function save(key, value) {
-      try {
-        localStorage.setItem(key, JSON.stringify(value));
-      } catch (e) {
-        console.error('save error', e);
-      }
-    }
+<script>
+/* ========= 工具 ========= */
+const $ = id => document.getElementById(id);
 
-    // DOM elements
-    const ownerNameInput = document.getElementById('ownerName');
-    const shopSignInput = document.getElementById('shopSign');
-    const statusText = document.getElementById('statusText');
-    const openBtn = document.getElementById('openBtn');
-    const closeBtn = document.getElementById('closeBtn');
+/* ========= Tab ========= */
+document.querySelectorAll(".tab-buttons button").forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll(".tab-buttons button").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    $(btn.id.replace("tab","page")).classList.add("active");
+  };
+});
 
-    const hoursForm = document.getElementById('hoursForm');
+/* ========= 店家 ========= */
+$("saveShopBtn").onclick=()=>{
+  $("shopDisplay").textContent = $("ownerName").value+"｜"+$("shopName").value;
+};
+$("openBtn").onclick=()=>{ $("statusText").textContent="目前狀態：營業中"; $("statusText").className="status open"; };
+$("closeBtn").onclick=()=>{ $("statusText").textContent="目前狀態：休業中"; $("statusText").className="status closed"; };
 
-    const menuTableBody = document.querySelector('#menuTable tbody');
-    const preorderTableBody = document.querySelector('#preorderTable tbody');
-    const acceptedTableBody = document.querySelector('#acceptedTable tbody');
+/* ========= 資料 ========= */
+let menu = JSON.parse(localStorage.getItem("menu")||"[]");
+let orders = JSON.parse(localStorage.getItem("orders")||"[]");
 
-    const addItemBtn = document.getElementById('addItemBtn');
-    const addPreBtn = document.getElementById('addPreBtn');
+function saveData(){
+  localStorage.setItem("menu",JSON.stringify(menu));
+  localStorage.setItem("orders",JSON.stringify(orders));
+}
 
-    const saveOwnerBtn = document.getElementById('saveOwnerBtn');
-    const saveSignBtn = document.getElementById('saveSignBtn');
+/* ========= 菜單 ========= */
+function renderMenu(){
+  $("menuTable").innerHTML="";
+  menu.forEach((m,i)=>{
+    $("menuTable").innerHTML+=`
+      <tr>
+        <td>${m.name}</td>
+        <td>$${m.price}</td>
+        <td>${m.stock}</td>
+        <td>
+          <button onclick="orderItem(${i})">下單</button>
+          <button class="danger" onclick="delItem(${i})">刪除</button>
+        </td>
+      </tr>`;
+  });
+}
 
-    // 初始載入
-    function init() {
-      // 載入店家資訊
-      const owner = load(STORAGE_KEYS.OWNER, '');
-      const sign = load(STORAGE_KEYS.SIGN, '');
-      ownerNameInput.value = owner;
-      shopSignInput.value = sign;
+$("addItemBtn").onclick=()=>{
+  if(!$("itemName").value) return;
+  menu.push({
+    name:$("itemName").value,
+    price:+$("itemPrice").value,
+    stock:+$("itemStock").value
+  });
+  saveData(); renderMenu();
+};
 
-      // 載入狀態
-      const status = load(STORAGE_KEYS.STATUS, 'closed');
-      applyStatus(status);
+/* ========= 訂單 ========= */
+function orderItem(i){
+  if(menu[i].stock<=0){ alert("庫存不足"); return; }
+  menu[i].stock--;
+  orders.push({
+    name:menu[i].name,
+    qty:1,
+    total:menu[i].price
+  });
+  saveData(); renderMenu(); renderOrders();
+}
 
-      // 載入營業時間
-      const hours = load(STORAGE_KEYS.HOURS, null);
-      if (hours) {
-        // 把時間設定回表單
-        for (const [key, val] of Object.entries(hours)) {
-          const input = hoursForm.elements[key];
-          if (input) input.value = val;
-        }
-      }
+function renderOrders(){
+  $("orderTable").innerHTML="";
+  orders.forEach((o,i)=>{
+    $("orderTable").innerHTML+=`
+      <tr>
+        <td>${o.name}</td>
+        <td>${o.qty}</td>
+        <td>$${o.total}</td>
+        <td>
+          <button class="danger" onclick="delOrder(${i})">刪除</button>
+        </td>
+      </tr>`;
+  });
+}
 
-      // 載入菜單、預購、已接受
-      renderMenu();
-      renderPreorders();
-      renderAccepted();
-    }
+function delOrder(i){
+  orders.splice(i,1);
+  saveData(); renderOrders();
+}
 
-    // set status (open/closed)
-    function applyStatus(status) {
-      if (status === 'open') {
-        statusText.textContent = '目前狀態：營業中';
-        statusText.classList.remove('closed');
-        statusText.classList.add('open');
-      } else {
-        statusText.textContent = '目前狀態：休業中';
-        statusText.classList.remove('open');
-        statusText.classList.add('closed');
-      }
-      save(STORAGE_KEYS.STATUS, status);
-    }
+function submitOrders(){
+  if(orders.length===0){
+    alert("目前沒有訂單");
+    return;
+  }
+  if(!confirm("確定送出所有訂單？")) return;
 
-    // 綁定按鈕
-    openBtn.addEventListener('click', () => applyStatus('open'));
-    closeBtn.addEventListener('click', () => applyStatus('closed'));
+  orders = [];
+  saveData();
+  renderOrders();
+  alert("訂單已送出！");
+}
 
-    // 儲存 owner / sign
-    saveOwnerBtn.addEventListener('click', () => {
-      const v = ownerNameInput.value.trim();
-      save(STORAGE_KEYS.OWNER, v);
-      alert('已儲存老闆姓名');
-    });
-    saveSignBtn.addEventListener('click', () => {
-      const v = shopSignInput.value.trim();
-      save(STORAGE_KEYS.SIGN, v);
-      alert('已儲存店家招牌');
-    });
+/* ========= 刪除菜單 ========= */
+function delItem(i){
+  menu.splice(i,1);
+  saveData(); renderMenu();
+}
 
-    // 儲存營業時間
-    hoursForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const formData = new FormData(hoursForm);
-      const obj = {};
-      for (const [k, v] of formData.entries()) {
-        obj[k] = v;
-      }
-      save(STORAGE_KEYS.HOURS, obj);
-      alert('營業時間已儲存');
-    });
+renderMenu(); renderOrders();
+</script>
 
-    // ---- 菜單管理 ----
-    function getMenu() {
-      return load(STORAGE_KEYS.MENU, []);
-    }
-    function renderMenu() {
-      const arr = getMenu();
-      menuTableBody.innerHTML = '';
-      if (arr.length === 0) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = '<td colspan="3">目前沒有品項</td>';
-        menuTableBody.appendChild(tr);
-        return;
-      }
-      arr.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${escapeHtml(item.name)}</td>
-          <td>${item.stock}</td>
-          <td>
-            <button class="delete-btn small" data-id="${item.id}">刪除</button>
-          </td>`;
-        menuTableBody.appendChild(tr);
-      });
-      // 綁定刪除
-      menuTableBody.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const id = btn.getAttribute('data-id');
-          deleteMenuItem(id);
-        });
-      });
-    }
-    function addMenuItem(name, stock) {
-      if (!name) return alert('請輸入品項名稱');
-      stock = parseInt(stock) || 0;
-      const arr = getMenu();
-      const newItem = { id: genId('menu'), name, stock };
-      arr.push(newItem);
-      save(STORAGE_KEYS.MENU, arr);
-      renderMenu();
-    }
-    function deleteMenuItem(id) {
-      let arr = getMenu();
-      arr = arr.filter(i => i.id !== id);
-      save(STORAGE_KEYS.MENU, arr);
-      renderMenu();
-    }
-    addItemBtn.addEventListener('click', () => {
-      const name = document.getElementById('itemName').value.trim();
-      const stock = document.getElementById('itemStock').value;
-      addMenuItem(name, stock);
-      document.getElementById('itemName').value = '';
-      document.getElementById('itemStock').value = '';
-    });
-
-    // ---- 預購訂單管理 ----
-    function getPreorders() {
-      return load(STORAGE_KEYS.PREORDERS, []);
-    }
-    function renderPreorders() {
-      const arr = getPreorders();
-      preorderTableBody.innerHTML = '';
-      if (arr.length === 0) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = '<td colspan="3">目前沒有預購訂單</td>';
-        preorderTableBody.appendChild(tr);
-        return;
-      }
-      arr.forEach(o => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${escapeHtml(o.name)}</td>
-          <td>${o.quantity}</td>
-          <td>
-            <button class="confirm-btn small" data-id="${o.id}">接受</button>
-            <button class="delete-btn small" data-id="${o.id}">刪除</button>
-          </td>`;
-        preorderTableBody.appendChild(tr);
-      });
-      // 綁定按鈕
-      preorderTableBody.querySelectorAll('.confirm-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const id = btn.getAttribute('data-id');
-          acceptPreorder(id);
-        });
-      });
-      preorderTableBody.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const id = btn.getAttribute('data-id');
-          deletePreorder(id);
-        });
-      });
-    }
-    function addPreorder(name, quantity) {
-      if (!name) return alert('請輸入預購品項名稱');
-      quantity = parseInt(quantity);
-      if (!quantity || quantity <= 0) return alert('請輸入有效數量');
-      const arr = getPreorders();
-      arr.push({ id: genId('pre'), name, quantity });
-      save(STORAGE_KEYS.PREORDERS, arr);
-      renderPreorders();
-    }
-    function deletePreorder(id) {
-      let arr = getPreorders();
-      arr = arr.filter(p => p.id !== id);
-      save(STORAGE_KEYS.PREORDERS, arr);
-      renderPreorders();
-    }
-    function acceptPreorder(id) {
-      // 將預購轉為已接受（移動）
-      const arr = getPreorders();
-      const idx = arr.findIndex(p => p.id === id);
-      if (idx === -1) return;
-      const accepted = load(STORAGE_KEYS.ACCEPTED, []);
-      accepted.push({ id: genId('acc'), name: arr[idx].name, quantity: arr[idx].quantity });
-      save(STORAGE_KEYS.ACCEPTED, accepted);
-      // 刪除預購
-      arr.splice(idx, 1);
-      save(STORAGE_KEYS.PREORDERS, arr);
-      renderPreorders();
-      renderAccepted();
-    }
-    addPreBtn.addEventListener('click', () => {
-      const name = document.getElementById('preItemName').value.trim();
-      const qty = document.getElementById('preQuantity').value;
-      addPreorder(name, qty);
-      document.getElementById('preItemName').value = '';
-      document.getElementById('preQuantity').value = '';
-    });
-
-    // ---- 已接受 ----
-    function getAccepted() {
-      return load(STORAGE_KEYS.ACCEPTED, []);
-    }
-    function renderAccepted() {
-      const arr = getAccepted();
-      acceptedTableBody.innerHTML = '';
-      if (arr.length === 0) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = '<td colspan="2">目前沒有已接受訂單</td>';
-        acceptedTableBody.appendChild(tr);
-        return;
-      }
-      arr.forEach(a => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${escapeHtml(a.name)}</td><td>${a.quantity}</td>`;
-        acceptedTableBody.appendChild(tr);
-      });
-    }
-
-    // 小工具：避免 XSS
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    // 初始化
-    init();
-  </script>
 </body>
 </html>
