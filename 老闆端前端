@@ -1,194 +1,173 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🏪 店家後台管理與訂單系統</title>
-  <style>
-    body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; background:#f7f7f7; }
-    header { background:#43a047; color:#fff; text-align:center; padding:15px; font-size:22px; font-weight:bold; }
-    .container { max-width:900px; margin:20px auto; background:#fff; border-radius:10px; padding:20px; box-shadow:0 0 8px rgba(0,0,0,.1); }
-    button { cursor:pointer; border:none; border-radius:6px; padding:6px 12px; font-weight:bold; }
-    .open-btn{background:#4caf50;color:#fff;}
-    .close-btn{background:#e53935;color:#fff;}
-    .danger{background:#e53935;color:#fff;}
-    .primary{background:#43a047;color:#fff;}
-    .status{font-size:18px;font-weight:bold;margin-top:10px;text-align:center;}
-    .status.open{color:#43a047;}
-    .status.closed{color:#e53935;}
-    input{padding:6px;border-radius:5px;border:1px solid #ccc;margin:3px 0;}
-    table{width:100%;border-collapse:collapse;margin-top:10px;}
-    th,td{padding:8px;border-bottom:1px solid #ccc;text-align:center;}
-    th{background:#e8f5e9;}
-    .tab-buttons{display:flex;justify-content:center;margin-bottom:15px;}
-    .tab-buttons button.active{background:#43a047;color:#fff;}
-    .page{display:none;}
-    .page.active{display:block;}
-    .order-actions{margin-top:10px;text-align:right;}
-  </style>
-</head>
-<body>
+<meta charset="UTF-8">
+<title>🏪 店家後台管理與訂單系統（穩定版）</title>
 
-<header>🏪 店家後台管理與訂單系統</header>
+<style>
+body{font-family:"Microsoft JhengHei";margin:0;background:#f7f7f7}
+header{background:#43a047;color:#fff;text-align:center;padding:15px;font-size:22px}
+.container{max-width:900px;margin:20px auto;background:#fff;border-radius:10px;padding:20px}
+button{cursor:pointer;border:none;border-radius:6px;padding:6px 12px;font-weight:bold}
+.open-btn{background:#4caf50;color:#fff}
+.close-btn{background:#e53935;color:#fff}
+.danger{background:#e53935;color:#fff}
+.status{font-size:18px;font-weight:bold;margin-top:10px;text-align:center}
+.status.open{color:#43a047}
+.status.closed{color:#e53935}
+input{padding:6px;border-radius:5px;border:1px solid #ccc;margin:3px 0}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{padding:8px;border-bottom:1px solid #ccc;text-align:center}
+th{background:#e8f5e9}
+.tab-buttons{display:flex;justify-content:center;margin-bottom:15px}
+.tab-buttons button.active{background:#43a047;color:#fff}
+.page{display:none}
+.page.active{display:block}
+</style>
+</head>
+
+<body>
+<header>🏪 店家後台管理與訂單系統（穩定版）</header>
 
 <div class="container">
-  <div class="tab-buttons">
-    <button id="tab1" class="active">店家資訊</button>
-    <button id="tab2">菜單管理</button>
-    <button id="tab3">訂單管理</button>
-  </div>
+<div class="tab-buttons">
+<button id="tab1" class="active">店家資訊</button>
+<button id="tab2">菜單管理</button>
+<button id="tab3">訂單管理</button>
+</div>
 
-  <!-- 店家資訊 -->
-  <div id="page1" class="page active">
-    <input id="ownerName" placeholder="老闆姓名">
-    <input id="shopName" placeholder="店名">
-    <button id="saveShopBtn">儲存</button>
-    <p id="shopDisplay">尚未設定</p>
-    <button id="openBtn" class="open-btn">開始營業</button>
-    <button id="closeBtn" class="close-btn">結束營業</button>
-    <div id="statusText" class="status closed">目前狀態：休業中</div>
-  </div>
+<div id="page1" class="page active">
+<input id="ownerName" placeholder="老闆姓名">
+<input id="shopName" placeholder="店名">
+<button onclick="saveShop()">儲存</button>
+<p id="shopDisplay">尚未設定</p>
+<button class="open-btn" onclick="setStatus('營業中')">開始營業</button>
+<button class="close-btn" onclick="setStatus('休業中')">結束營業</button>
+<div id="statusText" class="status closed">目前狀態：休業中</div>
+</div>
 
-  <!-- 菜單管理 -->
-  <div id="page2" class="page">
-    <input id="itemName" placeholder="品項">
-    <input id="itemPrice" type="number" placeholder="價格">
-    <input id="itemStock" type="number" placeholder="庫存">
-    <button id="addItemBtn">新增菜單</button>
+<div id="page2" class="page">
+<input id="itemName" placeholder="品項">
+<input id="itemPrice" type="number" placeholder="價格">
+<input id="itemStock" type="number" placeholder="庫存">
+<button onclick="addItem()">新增菜單</button>
 
-    <table>
-      <thead>
-        <tr><th>品項</th><th>價格</th><th>庫存</th><th>操作</th></tr>
-      </thead>
-      <tbody id="menuTable"></tbody>
-    </table>
-  </div>
+<table>
+<thead><tr><th>品項</th><th>價格</th><th>庫存</th><th>操作</th></tr></thead>
+<tbody id="menuTable"></tbody>
+</table>
+</div>
 
-  <!-- 訂單管理 -->
-  <div id="page3" class="page">
-    <table>
-      <thead>
-        <tr><th>品項</th><th>數量</th><th>總價</th><th>操作</th></tr>
-      </thead>
-      <tbody id="orderTable"></tbody>
-    </table>
-
-    <div class="order-actions">
-      <button class="primary" onclick="submitOrders()">送出訂單</button>
-    </div>
-  </div>
+<div id="page3" class="page">
+<table>
+<thead><tr><th>品項</th><th>數量</th><th>總價</th><th>操作</th></tr></thead>
+<tbody id="orderTable"></tbody>
+</table>
+</div>
 </div>
 
 <script>
-/* ========= 工具 ========= */
 const $ = id => document.getElementById(id);
 
-/* ========= Tab ========= */
+/* Tabs */
 document.querySelectorAll(".tab-buttons button").forEach(btn=>{
-  btn.onclick=()=>{
-    document.querySelectorAll(".tab-buttons button").forEach(b=>b.classList.remove("active"));
-    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-    btn.classList.add("active");
-    $(btn.id.replace("tab","page")).classList.add("active");
-  };
+btn.onclick=()=>{
+document.querySelectorAll(".tab-buttons button").forEach(b=>b.classList.remove("active"));
+document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+btn.classList.add("active");
+$(btn.id.replace("tab","page")).classList.add("active");
+};
 });
 
-/* ========= 店家 ========= */
-$("saveShopBtn").onclick=()=>{
-  $("shopDisplay").textContent = $("ownerName").value+"｜"+$("shopName").value;
-};
-$("openBtn").onclick=()=>{ $("statusText").textContent="目前狀態：營業中"; $("statusText").className="status open"; };
-$("closeBtn").onclick=()=>{ $("statusText").textContent="目前狀態：休業中"; $("statusText").className="status closed"; };
+/* 資料 */
+let shop = JSON.parse(localStorage.getItem("shop")) || {owner:"",name:"",status:"休業中"};
+let menu = JSON.parse(localStorage.getItem("menu")) || [];
+let orders = JSON.parse(localStorage.getItem("orders")) || [];
 
-/* ========= 資料 ========= */
-let menu = JSON.parse(localStorage.getItem("menu")||"[]");
-let orders = JSON.parse(localStorage.getItem("orders")||"[]");
-
-function saveData(){
-  localStorage.setItem("menu",JSON.stringify(menu));
-  localStorage.setItem("orders",JSON.stringify(orders));
+/* 店家 */
+function saveShop(){
+shop.owner=$("ownerName").value;
+shop.name=$("shopName").value;
+localStorage.setItem("shop",JSON.stringify(shop));
+loadShop();
 }
 
-/* ========= 菜單 ========= */
+function setStatus(s){
+shop.status=s;
+localStorage.setItem("shop",JSON.stringify(shop));
+loadShop();
+}
+
+function loadShop(){
+$("shopDisplay").textContent = shop.owner ? shop.owner+"｜"+shop.name : "尚未設定";
+$("statusText").textContent="目前狀態："+shop.status;
+$("statusText").className="status "+(shop.status==="營業中"?"open":"closed");
+}
+
+/* 菜單 */
+function addItem(){
+menu.push({id:Date.now(),name:$("itemName").value,price:+$("itemPrice").value,stock:+$("itemStock").value});
+localStorage.setItem("menu",JSON.stringify(menu));
+renderMenu();
+}
+
+function delItem(id){
+menu=menu.filter(m=>m.id!==id);
+localStorage.setItem("menu",JSON.stringify(menu));
+renderMenu();
+}
+
 function renderMenu(){
-  $("menuTable").innerHTML="";
-  menu.forEach((m,i)=>{
-    $("menuTable").innerHTML+=`
-      <tr>
-        <td>${m.name}</td>
-        <td>$${m.price}</td>
-        <td>${m.stock}</td>
-        <td>
-          <button onclick="orderItem(${i})">下單</button>
-          <button class="danger" onclick="delItem(${i})">刪除</button>
-        </td>
-      </tr>`;
-  });
+$("menuTable").innerHTML="";
+menu.forEach(m=>{
+$("menuTable").innerHTML+=`
+<tr>
+<td>${m.name}</td>
+<td>$${m.price}</td>
+<td>${m.stock}</td>
+<td>
+<button onclick="orderItem(${m.id})">下單</button>
+<button class="danger" onclick="delItem(${m.id})">刪除</button>
+</td>
+</tr>`;
+});
 }
 
-$("addItemBtn").onclick=()=>{
-  if(!$("itemName").value) return;
-  menu.push({
-    name:$("itemName").value,
-    price:+$("itemPrice").value,
-    stock:+$("itemStock").value
-  });
-  saveData(); renderMenu();
-};
+/* 訂單 */
+function orderItem(id){
+const item=menu.find(m=>m.id===id);
+if(item.stock<=0)return alert("庫存不足");
+item.stock--;
+orders.push({id:Date.now(),name:item.name,qty:1,total:item.price});
+localStorage.setItem("menu",JSON.stringify(menu));
+localStorage.setItem("orders",JSON.stringify(orders));
+renderMenu();
+renderOrders();
+}
 
-/* ========= 訂單 ========= */
-function orderItem(i){
-  if(menu[i].stock<=0){ alert("庫存不足"); return; }
-  menu[i].stock--;
-  orders.push({
-    name:menu[i].name,
-    qty:1,
-    total:menu[i].price
-  });
-  saveData(); renderMenu(); renderOrders();
+function deleteOrder(id){
+orders=orders.filter(o=>o.id!==id);
+localStorage.setItem("orders",JSON.stringify(orders));
+renderOrders();
 }
 
 function renderOrders(){
-  $("orderTable").innerHTML="";
-  orders.forEach((o,i)=>{
-    $("orderTable").innerHTML+=`
-      <tr>
-        <td>${o.name}</td>
-        <td>${o.qty}</td>
-        <td>$${o.total}</td>
-        <td>
-          <button class="danger" onclick="delOrder(${i})">刪除</button>
-        </td>
-      </tr>`;
-  });
+$("orderTable").innerHTML="";
+orders.forEach(o=>{
+$("orderTable").innerHTML+=`
+<tr>
+<td>${o.name}</td>
+<td>${o.qty}</td>
+<td>$${o.total}</td>
+<td><button class="danger" onclick="deleteOrder(${o.id})">刪除</button></td>
+</tr>`;
+});
 }
 
-function delOrder(i){
-  orders.splice(i,1);
-  saveData(); renderOrders();
-}
-
-function submitOrders(){
-  if(orders.length===0){
-    alert("目前沒有訂單");
-    return;
-  }
-  if(!confirm("確定送出所有訂單？")) return;
-
-  orders = [];
-  saveData();
-  renderOrders();
-  alert("訂單已送出！");
-}
-
-/* ========= 刪除菜單 ========= */
-function delItem(i){
-  menu.splice(i,1);
-  saveData(); renderMenu();
-}
-
-renderMenu(); renderOrders();
+/* 初始化 */
+loadShop();
+renderMenu();
+renderOrders();
 </script>
-
 </body>
 </html>
